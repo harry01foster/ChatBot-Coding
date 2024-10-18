@@ -105,15 +105,59 @@ COMPANY_INFO = {
 }
 
 
+# Define open and close hours
+OPEN_HOUR = 6
+CLOSE_HOUR = 22
+
+# Define the delay in milliseconds and convert to seconds for time.sleep()
+min_delay = 1 * 60  # 1 minute in seconds
+max_delay = 5 * 60  # 5 minutes in seconds
+
+def calculate_wait_time():
+    """Calculates the time to wait until the gym opens at 6 AM."""
+    current_time = datetime.now()
+    if current_time.hour >= CLOSE_HOUR:
+        # After 10 PM, wait until 6 AM the next day
+        next_open_time = (current_time + timedelta(days=1)).replace(hour=OPEN_HOUR, minute=0, second=0, microsecond=0)
+    elif current_time.hour < OPEN_HOUR:
+        # Before 6 AM, wait until 6 AM today
+        next_open_time = current_time.replace(hour=OPEN_HOUR, minute=0, second=0, microsecond=0)
+    else:
+        return 0  # Already within open hours, no need to wait
+
+    wait_time_seconds = (next_open_time - current_time).total_seconds()
+    return wait_time_seconds
+
+def add_realistic_delay():
+    """Adds a realistic delay between 1 to 5 minutes, depending on the time."""
+    current_hour = datetime.now().hour
+    delay = random.randint(min_delay, max_delay)  # Random delay between 1 and 5 minutes
+
+    if OPEN_HOUR <= current_hour < CLOSE_HOUR:
+        # If within open hours, apply the random delay
+        print(f"Applying delay of {delay // 60} minutes...")
+        time.sleep(delay)
+    else:
+        # If outside open hours, calculate wait time until 6 AM
+        wait_time = calculate_wait_time()
+        if wait_time > 0:
+            print(f"Waiting for {wait_time / 60} minutes until open hours (6 AM)...")
+            time.sleep(wait_time)
+
+        # After waiting for open hours, apply the random delay
+        print(f"Applying delay of {delay // 60} minutes after waiting for open hours...")
+        time.sleep(delay)
+
 # Conversation Handling Logic with Dynamic Engagement Analysis
 def generate_response(conversation):
     # Generate the response using OpenAI's GPT-4 API
-    response = openai.chat.completions.create(
-        model="gpt-4",
-        messages=conversation
-    )
+    # Simulate the delay before responding
+    add_realistic_delay()  # <-- Insert delay here before generating the response
 
-    return response.choices[0].message.content
+    # Example response (replace with actual OpenAI API call)
+    response = "Here is my delayed response!"
+    return response
+
 
 
 # User Interaction
